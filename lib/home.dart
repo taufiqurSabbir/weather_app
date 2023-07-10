@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:weather_app/RestApi.dart';
 import 'dart:convert';
 import 'package:weather_app/Style/style.dart';
@@ -19,9 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
+  bool inProgress = false;
+  final time = DateFormat('hh:mm a').format(DateTime.now());
+
   List<weather> weatherdata = [];
 
   void weatherFuntion(String location) async {
+    inProgress = true;
     const apiKey = "605325732f78f3467dd9c132b1dac803";
     final apiURL =
         "https://api.openweathermap.org/data/2.5/weather?units=metric&q=$location&appid=$apiKey";
@@ -31,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (response.statusCode == 200) {
       weatherdata.add(weather.fromJson(decode));
+      inProgress = false;
       setState(() {});
     } else {
       throw Exception('Failed to load weather data');
@@ -47,75 +53,87 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(onPressed: () {}, icon: Icon(Icons.add))
         ],
       ),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [colordeepPurple, colordeepPurple, color2nd])),
-        child: Padding(
-            padding: const EdgeInsets.only(top: 90.0),
-            child: ListView.builder(
-                itemCount: weatherdata.length,
-                itemBuilder: (BuildContext context, index) {
-                  return Column(
-                    children: [
-                      Text(
-                        weatherdata[index].name,
-                        style: TextStyle(color: Colors.white, fontSize: 38),
-                      ),
-                      Text(
-                        '',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                      SizedBox(
-                        height: 70,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image.network(
-                            "http://openweathermap.org/img/w/" +
-                                weatherdata[index].icon +
-                                ".png",
-                            errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.image),
-                          ),
-                          Text(
-                            '${weatherdata[index].temp.ceil().toString()}\u00b0',
-                            style: TextStyle(color: Colors.white, fontSize: 40),
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                'Max: ${weatherdata[index].high.ceil().toString()}\u00b0',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                'Min: ${weatherdata[index].low.ceil().toString()}\u00b0',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 15),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Text(
-                        weatherdata[index].description.toString(),
-                        style: TextStyle(color: Colors.white, fontSize: 40),
-                      ),
-                    ],
-                  );
-                })),
-      ),
+      body: inProgress
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [colordeepPurple, colordeepPurple, color2nd])),
+              child: Padding(
+                  padding: const EdgeInsets.only(top: 90.0),
+                  child: ListView.builder(
+                      itemCount: weatherdata.length,
+                      itemBuilder: (BuildContext context, index) {
+                        return Column(
+                          children: [
+                            Text(
+                              weatherdata[index].name,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 38),
+                            ),
+                            Text(
+                              'Updated At: ${time}',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 15),
+                            ),
+                            SizedBox(
+                              height: 70,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Image.network(
+                                  "http://openweathermap.org/img/w/" +
+                                      weatherdata[index].icon +
+                                      ".png",
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Icon(Icons.image),
+                                ),
+                                Text(
+                                  '${weatherdata[index].temp.ceil().toString()}\u00b0',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 40,
+                                      fontFamily: 'OpenSans'),
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Max: ${weatherdata[index].high.ceil().toString()}\u00b0',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 15),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      'Min: ${weatherdata[index].low.ceil().toString()}\u00b0',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 15),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              weatherdata[index].description.toString(),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40,
+                                  fontFamily: 'OpenSans'),
+                            ),
+                          ],
+                        );
+                      })),
+            ),
     );
   }
 }
