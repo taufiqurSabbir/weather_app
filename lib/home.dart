@@ -13,12 +13,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+
   @override
   void initState() {
     super.initState();
-    weatherFuntion('Jamaica');
+    weatherFuntion('London');
     setState(() {});
   }
+
+  final TextEditingController locationcon = TextEditingController();
 
   bool inProgress = false;
   final time = DateFormat('hh:mm a').format(DateTime.now());
@@ -36,11 +40,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (response.statusCode == 200) {
       weatherdata.add(weather.fromJson(decode));
-      inProgress = false;
-      setState(() {});
+
     } else {
-      throw Exception('Failed to load weather data');
+      showDialog(context: context, builder: (context){
+        return AlertDialog(
+          title: Text('Warning'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('City Not find'),
+            TextField(
+              controller: locationcon,
+              decoration: InputDecoration(
+                filled: true,
+
+                // fillColor: Color(0xFFF8FAFF),
+                prefixIcon: Icon(Icons.search),
+                label: Text('Search Location'),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: Colors.transparent,
+                    ),
+                    borderRadius: BorderRadius.circular(20))),
+        ),
+
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: (){
+              weatherFuntion(locationcon.text);
+              setState(() {
+              });
+              Navigator.pop(context);
+            }, child: Text('Add'))
+          ],
+        );
+      });
     }
+    inProgress = false;
+    setState(() {});
   }
 
   @override
@@ -50,7 +92,47 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Flutter Weather'),
         actions: [
           IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.add))
+          IconButton(onPressed: () {
+            showDialog(context: context, builder: (context){
+              return AlertDialog(
+                title: Text('Add City'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Enter City name'),
+                    TextField(
+                      controller: locationcon,
+                      decoration: InputDecoration(
+                          filled: true,
+
+                          // fillColor: Color(0xFFF8FAFF),
+                          prefixIcon: Icon(Icons.search),
+                          label: Text('Search Location'),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.transparent,
+                              ),
+                              borderRadius: BorderRadius.circular(20))),
+                    ),
+
+                  ],
+                ),
+                actions: [
+                  TextButton(onPressed: (){
+                    weatherdata.clear();
+                    weatherFuntion(locationcon.text);
+                    setState(() {});
+                    locationcon.clear();
+                    Navigator.pop(context);
+                  }, child: Text('Add'))
+                ],
+              );
+            });
+          }, icon: Icon(Icons.add))
         ],
       ),
       body: inProgress
@@ -90,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Image.network(
                                   "http://openweathermap.org/img/w/" +
                                       weatherdata[index].icon +
-                                      ".png",
+                                      ".png", fit: BoxFit.cover, height: 100,
                                   errorBuilder: (context, error, stackTrace) =>
                                       Icon(Icons.image),
                                 ),
