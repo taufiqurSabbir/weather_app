@@ -2,18 +2,22 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 
-Future<Map<String,dynamic>> weatherdata(String location) async {
-  const apiKey = "605325732f78f3467dd9c132b1dac803";
-  final apiURL =
-      "https://api.openweathermap.org/data/2.5/weather?units=metric&q=$location&appid=$apiKey";
+class weather {
+  final double temp, feelsLike, low, high;
+  final String description, name, icon;
 
-  Response response = await get(Uri.parse(apiURL));
+  weather(this.temp, this.feelsLike, this.low, this.high, this.description,
+      this.name, this.icon);
 
-
-  if (response.statusCode == 200) {
-    Map<String, dynamic> weatherMap = jsonDecode(response.body);
-    return weatherMap;
-  } else {
-    throw Exception('Failed to load weather data');
+  factory weather.fromJson(Map<String, dynamic> e) {
+    return weather(
+      e['main']['temp'],
+      e['main']['feels_like'],
+      e['main']['temp_min'],
+      e['main']['temp_max'],
+      e['weather'][0]['main'],
+      e['name'],
+      e['weather'][0]['icon'],
+    );
   }
 }
